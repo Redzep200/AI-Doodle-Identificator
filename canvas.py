@@ -6,9 +6,19 @@ class Canvas():
         self.root = root
         self.root.title("Drawing Canvas")
 
+        # Disable window resizing
+        self.root.resizable(width=False, height=False)
+
+        # Set resolution of canvas
+        self.canvas_width = 254
+        self.canvas_height = 254
+
+        # Set size of pixels
+        self.pixelation_factor = 10
+
         # Adds a canvas to the main window instance and sets the canvas to fill the window
-        self.canvas = tk.Canvas(root,bg="black")
-        self.canvas.pack(fill=tk.BOTH,expand=True)
+        self.canvas = tk.Canvas(root,bg="black", width=self.canvas_width, height=self.canvas_height)
+        self.canvas.pack(fill=tk.BOTH,expand=False)
 
         self.pen_color="white"
 
@@ -17,7 +27,7 @@ class Canvas():
         self.last_x, self.last_y = None, None
 
         # List to store drawn lines
-        self.lines = []
+        self.pixels = []
 
         # Button to undo the last drawn line
         self.undo_button = tk.Button(root, text="Undo", command=self.undo)
@@ -45,19 +55,23 @@ class Canvas():
     def draw(self,event):
         if self.drawing:
             x, y = event.x, event.y
-            line = self.canvas.create_line(self.last_x, self.last_y, x, y, fill=self.pen_color, width=2)
-            self.lines.append(line)     # add line to line list
-            self.last_x, self.last_y = x, y     # set last x and y to new x,y
+            x = round(x/self.pixelation_factor)*self.pixelation_factor
+            y = round(y/self.pixelation_factor)*self.pixelation_factor
+
+            # Check to see if pixel is in bounds
+            if 0 <= x < self.canvas_width and 0 <= y < self.canvas_height:
+                pixel = self.canvas.create_rectangle(x, y, x+self.pixelation_factor, y+self.pixelation_factor, fill=self.pen_color, outline="")
+                self.pixels.append(pixel)     # add pixel to pixel list
     
 
-    def stop_draw():
+    def stop_draw(self):
         self.drawing = False
 
     # Check if line array is empty if not remove the last line from array and delete from canvas
     def undo(self):
-        if self.lines:
-            last_line = self.lines.pop()    
-            self.canvas.delete(last_line)
+        if self.pixels:
+            last_pixel = self.pixels.pop()    
+            self.canvas.delete(last_pixel)
 
     def erase(self):
         self.canvas.delete("all")
