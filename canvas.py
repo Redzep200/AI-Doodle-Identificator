@@ -1,85 +1,52 @@
 import tkinter as tk
+from PIL import Image, ImageDraw
 
-class Canvas():
+class DrawingApp:
     def __init__(self, root):
-        # Sets the Tkinter main window instance as a pameter of the Canvas class
         self.root = root
-        self.root.title("Drawing Canvas")
+        self.root.title("Drawing App")
 
-        # Disable window resizing
-        self.root.resizable(width=False, height=False)
+        self.canvas = tk.Canvas(root, bg="black", width=280, height=280)
+        self.canvas.pack(expand=tk.YES, fill=tk.BOTH)
 
-        # Set resolution of canvas
-        self.canvas_width = 254
-        self.canvas_height = 254
+        self.canvas.bind("<B1-Motion>", self.paint)
 
-        # Set size of pixels
-        self.pixelation_factor = 10
+        self.save_button = tk.Button(root, text="Save", command=self.save_image)
+        self.save_button.pack(side=tk.BOTTOM)
 
-        # Adds a canvas to the main window instance and sets the canvas to fill the window
-        self.canvas = tk.Canvas(root,bg="black", width=self.canvas_width, height=self.canvas_height)
-        self.canvas.pack(fill=tk.BOTH,expand=False)
+        self.image = Image.new("L", (280, 280), color="black")
+        self.draw = ImageDraw.Draw(self.image)
 
-        self.pen_color="white"
-
-        # Denotes that the user is not actively drawing and that there is no x,y cursor coordinates
-        self.drawing = False
         self.last_x, self.last_y = None, None
 
-        # List to store drawn lines
-        self.pixels = []
+    def paint(self, event):
+        x, y = event.x, event.y
 
-        # Button to undo the last drawn line
-        self.undo_button = tk.Button(root, text="Undo", command=self.undo)
-        self.undo_button.pack(side = tk.LEFT)
+        if self.last_x is not None and self.last_y is not None:
+            self.canvas.create_line(self.last_x, self.last_y, x, y, fill="white", width=4)
+            self.draw.line([self.last_x, self.last_y, x, y], fill="white", width=4)
 
-        # Button to erase all drawn lines
-        self.erase_button = tk.Button(root, text="Erase", command=self.erase)
-        self.erase_button.pack(side=tk.LEFT)
+        self.last_x, self.last_y = x, y
 
-        # Button to save the drawing
-        self.save_button = tk.Button(root, text="Save")
-        self.save_button.pack(side=tk.RIGHT)
-
-        # Binding of left mouse button events to functions
-        self.canvas.bind("<Button-1>",self.start_draw)
-        self.canvas.bind("<B1-Motion>",self.draw)
-        self.canvas.bind("<ButtonRelease-1>",self.stop_draw)
-
-    # Set parameters to initate drawing
-    def start_draw(self,event):
-        self.drawing = True
-        self.last_x, self.last_y = event.x, event.y
-
-    # Start drawing - creates line from last x and y to the current x,y 
-    def draw(self,event):
-        if self.drawing:
-            x, y = event.x, event.y
-            x = round(x/self.pixelation_factor)*self.pixelation_factor
-            y = round(y/self.pixelation_factor)*self.pixelation_factor
-
-            # Check to see if pixel is in bounds
-            if 0 <= x < self.canvas_width and 0 <= y < self.canvas_height:
-                pixel = self.canvas.create_rectangle(x, y, x+self.pixelation_factor, y+self.pixelation_factor, fill=self.pen_color, outline="")
-                self.pixels.append(pixel)     # add pixel to pixel list
-    
-
-    def stop_draw(self):
-        self.drawing = False
-
-    # Check if line array is empty if not remove the last line from array and delete from canvas
-    def undo(self):
-        if self.pixels:
-            last_pixel = self.pixels.pop()    
-            self.canvas.delete(last_pixel)
-
-    def erase(self):
-        self.canvas.delete("all")
+    def save_image(self):
+        filename = "drawing.png"
+        self.image = self.image.resize((28, 28), Image.LANCZOS)
+        self.image.save(filename)
+        print(f"Image saved as {filename}")
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = Canvas(root)
+    app = DrawingApp(root)
     root.mainloop()
+
+
+
+
+
+
+
+
+
 
 
 
