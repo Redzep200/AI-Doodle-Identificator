@@ -9,11 +9,11 @@ class DrawingApp:
 
         # Create a frame to hold the canvas and scrollbar
         frame = tk.Frame(root)
-        frame.pack(fill=tk.BOTH, expand=True)
+        frame.pack(fill=tk.NONE, expand=False)
 
         # Canvas
         self.canvas = tk.Canvas(frame, bg="black", width=280, height=280)
-        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.canvas.pack(side=tk.LEFT, fill=tk.NONE, expand=False)
 
         self.canvas.bind("<B1-Motion>", self.paint)
         self.canvas.bind("<ButtonRelease-1>", self.reset_last_position)
@@ -26,10 +26,10 @@ class DrawingApp:
 
         # Buttons for Save and Clear
         save_button = tk.Button(root, text="Save", command=self.save_image)
-        save_button.pack(side=tk.BOTTOM)
+        save_button.pack(side=tk.LEFT)  # Change this line
 
         clear_button = tk.Button(root, text="Clear", command=self.clear_canvas)
-        clear_button.pack(side=tk.BOTTOM)
+        clear_button.pack(side=tk.LEFT)  # Change this line
 
         self.image = Image.new("L", (280, 280), color="black")
         self.draw = ImageDraw.Draw(self.image)
@@ -72,24 +72,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = DrawingApp(root)
     root.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
