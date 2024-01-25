@@ -1,74 +1,136 @@
-import tkinter as tk
-from PIL import Image, ImageDraw
 import numpy as np
+import matplotlib.pyplot as plt
 
-class DrawingApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Drawing App")
-
-        # Create a frame to hold the canvas and scrollbar
-        frame = tk.Frame(root)
-        frame.pack(fill=tk.NONE, expand=False)
-
-        # Canvas
-        self.canvas = tk.Canvas(frame, bg="black", width=280, height=280)
-        self.canvas.pack(side=tk.LEFT, fill=tk.NONE, expand=False)
-
-        self.canvas.bind("<B1-Motion>", self.paint)
-        self.canvas.bind("<ButtonRelease-1>", self.reset_last_position)
-
-        # Scrollbar and Text widget for displaying normalized vector
-        self.scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL)
-        self.text_widget = tk.Text(frame, wrap=tk.NONE, yscrollcommand=self.scrollbar.set, height=10)
-        self.text_widget.pack(side=tk.RIGHT, fill=tk.Y)
-        self.scrollbar.config(command=self.text_widget.yview)
-
-        # Buttons for Save and Clear
-        save_button = tk.Button(root, text="Save", command=self.save_image)
-        save_button.pack(side=tk.LEFT)  # Change this line
-
-        clear_button = tk.Button(root, text="Clear", command=self.clear_canvas)
-        clear_button.pack(side=tk.LEFT)  # Change this line
-
-        self.image = Image.new("L", (280, 280), color="black")
-        self.draw = ImageDraw.Draw(self.image)
-
-        self.last_x, self.last_y = None, None
+ANT = 1
+COMPUTER = 2
+COOKIE = 3
+HEADPHONES = 4
+LIGHTNING = 5
 
 
-    def paint(self, event):
-        x, y = event.x, event.y
+class Data:
+    def __init__(self, drawing, label):
+        self.drawing = drawing
+        self.label = label
 
-        if self.last_x is not None and self.last_y is not None:
-            self.canvas.create_line(self.last_x, self.last_y, x, y, fill="white", width=4)
-            self.draw.line([self.last_x, self.last_y, x, y], fill="white", width=4)
+    def normalize(self):
+        # Convert the drawing to float32 before normalization
+        self.drawing = self.drawing.astype('float32')
+        self.drawing /= 255.0
 
-        self.last_x, self.last_y = x, y
+def load_dataset(path):
+    data = np.load(path)
+    return data
 
-    def reset_last_position(self, event):
-        self.last_x, self.last_y = None, None
 
-    def save_image(self):
-        filename = "drawing.png"
-        self.image = self.image.resize((28, 28), Image.LANCZOS)
-        self.image.save(filename)
-        normalized_vector = self.normalize_image(self.image)
-        self.text_widget.insert(tk.END, f"Normalized Vector:\n{normalized_vector}\n\n")
-        print(f"Image saved as {filename}")
+def LOAD_DATA():
+    # Load the dataset
+    ant_path = 'ant.npy'
+    computer_path='computer.npy'
+    cookie_path='cookie.npy'
+    headphones_path='headphones.npy'
+    lightning_path='lightning.npy'
 
-    def normalize_image(self, image):
-        flat_array = np.array(image).flatten()
-        normalized_vector = flat_array / 255.0
-        return normalized_vector
+    # Save the drawings into a object
+    ant_drawings = load_dataset(ant_path)
+    computer_drawings = load_dataset(computer_path)
+    cookie_drawings = load_dataset(cookie_path)
+    headphones_drawings = load_dataset(headphones_path)
+    lightning_drawings = load_dataset(lightning_path)
 
-    def clear_canvas(self):
-        self.canvas.delete("all")
-        self.image = Image.new("L", (280, 280), color="black")
-        self.draw = ImageDraw.Draw(self.image)
-        self.last_x, self.last_y = None, None
+    # Create an array of labels matching the number of drawings
+    ant_labels = np.full(len(ant_drawings), fill_value=ANT) 
+    computer_labels = np.full(len(computer_drawings), fill_value=COMPUTER) 
+    cookie_labels = np.full(len(cookie_drawings), fill_value=COOKIE) 
+    headphones_labels = np.full(len(headphones_drawings), fill_value=HEADPHONES) 
+    lightning_labels = np.full(len(lightning_drawings), fill_value=LIGHTNING) 
+
+    # Create a list of Data instances
+    ant_dataset = [Data(drawing, label) for drawing, label in zip(ant_drawings, ant_labels)]
+    computer_dataset = [Data(drawing, label) for drawing, label in zip(computer_drawings, computer_labels)]
+    cookie_dataset = [Data(drawing, label) for drawing, label in zip(cookie_drawings, cookie_labels)]
+    headphones_dataset = [Data(drawing, label) for drawing, label in zip(headphones_drawings, headphones_labels)]
+    lightning_dataset = [Data(drawing, label) for drawing, label in zip(lightning_drawings, lightning_labels)]
+
+    # Normalize each drawing
+    for sample in ant_dataset:
+        sample.normalize()
+
+    for sample in computer_dataset:
+        sample.normalize()
+
+    for sample in cookie_dataset:
+        sample.normalize()
+
+    for sample in headphones_dataset:
+        sample.normalize()
+
+    for sample in lightning_dataset:
+        sample.normalize()
+
+
+    # Combine all datasets into a single list
+    dataset = []
+
+    # Extend the list with each dataset
+    dataset.extend(ant_dataset)
+    dataset.extend(computer_dataset)
+    dataset.extend(cookie_dataset)
+    dataset.extend(headphones_dataset)
+    dataset.extend(lightning_dataset)
+
+    # Shuffle the combined dataset
+    np.random.shuffle(dataset)
+
+
+    return dataset
+
+
+def GetLabel(label):
+
+    def case1():
+        return "Ant"
+
+    def case2():
+        return "Computer"
+
+    def case3():
+        return "Cookie"
+
+    def case4():
+        return "Headphones"
+
+    def case5():
+        return "Lightning"
+
+    def default():
+        return "Not Applicable"
+
+    # Look up the case function from the dictionary
+    selected_case = {
+        1: case1,
+        2: case2,
+        3: case3,
+        4: case4,
+        5: case5
+    }.get(label, default)
+
+    # Call the selected function and return its result
+    return selected_case()
+
+
+
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = DrawingApp(root)
-    root.mainloop()
+    dataset = LOAD_DATA()
+
+    for i in range(5):
+        sample = dataset[i]
+        first_drawing = sample.drawing.reshape((28, 28))
+        label = GetLabel(sample.label)
+
+        plt.imshow(first_drawing, cmap='gray')
+        plt.title(f'Label: {label}')
+        plt.show()
+
+        print(f"Drawing array: {sample.drawing}\n Label: {label}\n")
