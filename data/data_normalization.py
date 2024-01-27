@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from torch.utils.data import Dataset
+
 
 ANT = 1
 COMPUTER = 2
@@ -8,19 +10,29 @@ HEADPHONES = 4
 LIGHTNING = 5
 
 
-class Data:
+class Data(Dataset):
     def __init__(self, drawing, label):
-        self.drawing = drawing
-        self.label = label
+        self.drawing = drawing 
+        self.label = label 
 
-    def normalize(self):
-        # Convert the drawing to float32 before normalization
-        self.drawing = self.drawing.astype('float32')
-        self.drawing /= 255.0
+    def __len__(self):
+        return len(self.drawing)
+
+    def __getitem__(self, idx):
+        return self.drawing[idx], self.label[idx]
+        
+        
+
+def normalize(data):
+    normalized = data.astype('float32')
+    normalized /= 255.0
+    return normalized
 
 def load_dataset(path):
     data = np.load(path)
-    return data
+    normalized_data = normalize(data)
+    return normalized_data
+
 
 
 def LOAD_DATA():
@@ -45,42 +57,33 @@ def LOAD_DATA():
     headphones_labels = np.full(len(headphones_drawings), fill_value=HEADPHONES) 
     lightning_labels = np.full(len(lightning_drawings), fill_value=LIGHTNING) 
 
-    # Create a list of Data instances
-    ant_dataset = [Data(drawing, label) for drawing, label in zip(ant_drawings, ant_labels)]
-    computer_dataset = [Data(drawing, label) for drawing, label in zip(computer_drawings, computer_labels)]
-    cookie_dataset = [Data(drawing, label) for drawing, label in zip(cookie_drawings, cookie_labels)]
-    headphones_dataset = [Data(drawing, label) for drawing, label in zip(headphones_drawings, headphones_labels)]
-    lightning_dataset = [Data(drawing, label) for drawing, label in zip(lightning_drawings, lightning_labels)]
+    junk_data = []
+    junk_data.extend(ant_drawings)
+    junk_data.extend(computer_drawings)
+    junk_data.extend(cookie_drawings)
+    junk_data.extend(headphones_drawings)
+    junk_data.extend(lightning_drawings)
 
-    # Normalize each drawing
-    for sample in ant_dataset:
-        sample.normalize()
+    junk_labels=[]
+    junk_labels.extend(ant_labels)
+    junk_labels.extend(computer_labels)
+    junk_labels.extend(cookie_labels)
+    junk_labels.extend(headphones_labels)
+    junk_labels.extend(lightning_labels)
 
-    for sample in computer_dataset:
-        sample.normalize()
+    junk_data= np.array(junk_data)
+    junk_labels= np.array(junk_labels)
 
-    for sample in cookie_dataset:
-        sample.normalize()
+    indices = np.arange(len(junk_data))
+    np.random.shuffle(indices)
 
-    for sample in headphones_dataset:
-        sample.normalize()
-
-    for sample in lightning_dataset:
-        sample.normalize()
+    shuffled_data = junk_data[indices]
+    shuffled_labels = junk_labels[indices]
 
 
-    # Combine all datasets into a single list
-    dataset = []
+    dataset = Data(shuffled_data,shuffled_labels)
 
-    # Extend the list with each dataset
-    dataset.extend(ant_dataset)
-    dataset.extend(computer_dataset)
-    dataset.extend(cookie_dataset)
-    dataset.extend(headphones_dataset)
-    dataset.extend(lightning_dataset)
-
-    # Shuffle the combined dataset
-    np.random.shuffle(dataset)
+    
 
 
     return dataset
@@ -125,12 +128,13 @@ if __name__ == "__main__":
     dataset = LOAD_DATA()
 
     for i in range(5):
-        sample = dataset[i]
-        first_drawing = sample.drawing.reshape((28, 28))
-        label = GetLabel(sample.label)
+        drawing, label =  dataset[i]
+
+        first_drawing = drawing.reshape((28, 28))
+        # label = GetLabel(label)
 
         plt.imshow(first_drawing, cmap='gray')
         plt.title(f'Label: {label}')
         plt.show()
 
-        print(f"Drawing array: {sample.drawing}\n Label: {label}\n")
+        print(f"Drawing array: {drawing}\n Label: {label}\n")
