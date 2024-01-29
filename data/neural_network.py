@@ -114,7 +114,7 @@ def test():
             
 
 if __name__ == '__main__':
-    for epoch_num in range(1,4):
+    for epoch_num in range(1,6):
         train(epoch_num)
         test()
     torch.save(model.state_dict(),'doodle_identificator.pth')
