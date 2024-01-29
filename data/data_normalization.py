@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 from torch.utils.data import Dataset
 
 
-ANT = 1
-COMPUTER = 2
-COOKIE = 3
-HEADPHONES = 4
-LIGHTNING = 5
+ANT = 0
+COMPUTER = 1
+COOKIE = 2
+HEADPHONES = 3
+LIGHTNING = 4
 
 
 class Data(Dataset):
@@ -37,11 +37,11 @@ def load_dataset(path):
 
 def LOAD_DATA():
     # Load the dataset
-    ant_path = 'ant.npy'
-    computer_path='computer.npy'
-    cookie_path='cookie.npy'
-    headphones_path='headphones.npy'
-    lightning_path='lightning.npy'
+    ant_path = 'data/ant.npy' #za pokretanje iz canvasa dodati data/...
+    computer_path='data/computer.npy'
+    cookie_path='data/cookie.npy'
+    headphones_path='data/headphones.npy'
+    lightning_path='data/lightning.npy'
 
     # Save the drawings into a object
     ant_drawings = load_dataset(ant_path)
@@ -50,19 +50,27 @@ def LOAD_DATA():
     headphones_drawings = load_dataset(headphones_path)
     lightning_drawings = load_dataset(lightning_path)
 
+    #shorten each drawing list to have same amount of elements
+    ant_drawings_shortened = ant_drawings
+    computer_drawings_shortened = computer_drawings
+    cookie_drawings_shortened = cookie_drawings
+    headphones_drawings_shortened = headphones_drawings
+    lightning_drawings_shortened = lightning_drawings
+
+
     # Create an array of labels matching the number of drawings
-    ant_labels = np.full(len(ant_drawings), fill_value=ANT) 
-    computer_labels = np.full(len(computer_drawings), fill_value=COMPUTER) 
-    cookie_labels = np.full(len(cookie_drawings), fill_value=COOKIE) 
-    headphones_labels = np.full(len(headphones_drawings), fill_value=HEADPHONES) 
-    lightning_labels = np.full(len(lightning_drawings), fill_value=LIGHTNING) 
+    ant_labels = np.full(len(ant_drawings_shortened), fill_value=ANT) 
+    computer_labels = np.full(len(computer_drawings_shortened), fill_value=COMPUTER) 
+    cookie_labels = np.full(len(cookie_drawings_shortened), fill_value=COOKIE) 
+    headphones_labels = np.full(len(headphones_drawings_shortened), fill_value=HEADPHONES) 
+    lightning_labels = np.full(len(lightning_drawings_shortened), fill_value=LIGHTNING) 
 
     junk_data = []
-    junk_data.extend(ant_drawings)
-    junk_data.extend(computer_drawings)
-    junk_data.extend(cookie_drawings)
-    junk_data.extend(headphones_drawings)
-    junk_data.extend(lightning_drawings)
+    junk_data.extend(ant_drawings_shortened)
+    junk_data.extend(computer_drawings_shortened)
+    junk_data.extend(cookie_drawings_shortened)
+    junk_data.extend(headphones_drawings_shortened)
+    junk_data.extend(lightning_drawings_shortened)
 
     junk_labels=[]
     junk_labels.extend(ant_labels)
@@ -111,11 +119,11 @@ def GetLabel(label):
 
     # Look up the case function from the dictionary
     selected_case = {
-        1: case1,
-        2: case2,
-        3: case3,
-        4: case4,
-        5: case5
+        0: case1,
+        1: case2,
+        2: case3,
+        3: case4,
+        4: case5
     }.get(label, default)
 
     # Call the selected function and return its result
